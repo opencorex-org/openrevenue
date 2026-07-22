@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: OpenRevenue support
+    url: https://github.com/opencorex-org/openrevenue/blob/main/SUPPORT.md
+    about: Read the support guide before requesting help.
+  - name: OpenCorex organization
+    url: https://github.com/opencorex-org
+    about: Explore other OpenCorex open-source projects.
