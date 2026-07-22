@@ -1,0 +1,5 @@
+* @opencorex-org/maintainers
+/contracts/ @opencorex-org/api-maintainers
+/database/ @opencorex-org/database-maintainers
+/infrastructure/ @opencorex-org/platform-maintainers
+/docs/security/ @opencorex-org/security-maintainers
