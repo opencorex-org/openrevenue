@@ -1,0 +1,1 @@
+currencies: [{code: XCR, name: Example Credit, minorUnits: 2, fictional: true}]
