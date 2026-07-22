@@ -1,0 +1,7 @@
+code: SAMPLE_INCOME
+name: Fictional sample income tax
+currency: XCR
+filingFrequency: ANNUAL
+rate: {kind: FLAT, basisPoints: 1000}
+effectiveFrom: 2026-01-01
+exampleOnly: true

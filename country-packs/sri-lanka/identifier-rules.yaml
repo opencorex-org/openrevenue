@@ -1,0 +1,1 @@
+rules: [{type: DEMO_ID, pattern: '^DEMO-[0-9]{3,12}$', exampleOnly: true}]
