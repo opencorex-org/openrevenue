@@ -1,0 +1,1 @@
+{"name":"@openrevenue/officer-portal","version":"0.1.0","private":true,"scripts":{"build":"echo 'Officer portal feature shell'","lint":"echo ok","typecheck":"echo ok","test":"echo ok"}}
