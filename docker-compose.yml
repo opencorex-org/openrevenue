@@ -1,0 +1,27 @@
+name: openrevenue
+services:
+  postgres:
+    image: "postgres:17-alpine"
+    environment: {POSTGRES_DB: openrevenue, POSTGRES_USER: openrevenue, POSTGRES_PASSWORD: openrevenue_dev_only}
+    ports: ["5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck: {test: [CMD-SHELL, "pg_isready -U openrevenue"], interval: 5s, timeout: 3s, retries: 10}
+  redis: {image: "redis:7.4-alpine", ports: ["6379:6379"]}
+  minio:
+    image: "minio/minio:latest"
+    command: "server /data --console-address :9001"
+    environment: {MINIO_ROOT_USER: openrevenue, MINIO_ROOT_PASSWORD: openrevenue_dev_only}
+    ports: ["9000:9000", "9001:9001"]
+  mailpit: {image: "axllent/mailpit:latest", ports: ["1025:1025", "8025:8025"]}
+  prometheus:
+    image: "prom/prometheus:latest"
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes: ["./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    ports: ["9090:9090"]
+  grafana: {image: "grafana/grafana:latest", ports: ["3001:3000"]}
+  otel-collector:
+    image: "otel/opentelemetry-collector-contrib:latest"
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes: ["./infrastructure/monitoring/otel-collector.yaml:/etc/otel/config.yaml:ro"]
+    ports: ["4317:4317", "4318:4318"]
+volumes: {postgres-data: {}}
