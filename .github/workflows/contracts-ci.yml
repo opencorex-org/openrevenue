@@ -1,0 +1,11 @@
+name: Contracts CI
+on: [pull_request, push]
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: stoplightio/spectral-action@latest
+        with: {file_glob: contracts/openapi/*.yaml}
+      - run: jq empty contracts/events/*.json
