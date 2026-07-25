@@ -1,0 +1,3 @@
+# Security architecture
+
+OIDC authentication is provider-neutral. Authorization combines role/permission checks with office, jurisdiction, ownership, assignment, tax type, approval limit, and data classification. Deny is the default. API middleware enforces correlation, request limits, secure headers, authentication, and problem responses. Production profiles require TLS, managed secrets, encrypted storage, malware scanning, rate limiting, CSRF-safe browser authentication, redacted telemetry, immutable audit export, SAST/dependency/container scanning, and least-privilege database identities. See [authorization](../diagrams/authorization.md) and the [threat model](../security/threat-model.md).

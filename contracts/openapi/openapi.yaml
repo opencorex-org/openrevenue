@@ -1,0 +1,32 @@
+openapi: 3.1.0
+info: {title: OpenRevenue API, version: 0.1.0, description: Configurable revenue administration API}
+servers: [{url: /api/v1}]
+paths:
+  /taxpayers:
+    post:
+      operationId: createTaxpayer
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateTaxpayer'}}}}
+      responses: {'201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/Taxpayer'}}}}, default: {$ref: '#/components/responses/Problem'}}
+  /taxpayers/{taxpayerId}/tax-registrations:
+    post:
+      operationId: registerTaxpayer
+      parameters: [{name: taxpayerId, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, required: [taxType], properties: {taxType: {type: string}}}}}}
+      responses: {'201': {description: Registered}, default: {$ref: '#/components/responses/Problem'}}
+  /returns: {post: {operationId: createReturnDraft, responses: {'201': {description: Draft created}, default: {$ref: '#/components/responses/Problem'}}}}
+  /returns/{returnId}/validate: {post: {operationId: validateReturn, parameters: [{$ref: '#/components/parameters/ReturnId'}], responses: {'200': {description: Validated}, default: {$ref: '#/components/responses/Problem'}}}}
+  /returns/{returnId}/submit: {post: {operationId: submitReturn, parameters: [{$ref: '#/components/parameters/ReturnId'}], responses: {'201': {description: Submitted and assessed}, default: {$ref: '#/components/responses/Problem'}}}}
+  /payments: {post: {operationId: recordPayment, responses: {'201': {description: Recorded and allocated}, default: {$ref: '#/components/responses/Problem'}}}}
+  /taxpayers/{taxpayerId}/ledger: {get: {operationId: getLedger, parameters: [{name: taxpayerId, in: path, required: true, schema: {type: string, format: uuid}}], responses: {'200': {description: Append-only ledger}, default: {$ref: '#/components/responses/Problem'}}}}
+  /admin/audit-events: {get: {operationId: listAuditEvents, responses: {'200': {description: Immutable audit events}, default: {$ref: '#/components/responses/Problem'}}}}
+components:
+  parameters:
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, maxLength: 128}}
+    ReturnId: {name: returnId, in: path, required: true, schema: {type: string, format: uuid}}
+  schemas:
+    CreateTaxpayer: {type: object, required: [name, identifier], additionalProperties: false, properties: {name: {type: string}, identifier: {type: string}}}
+    Taxpayer: {type: object, required: [id, name, identifier], properties: {id: {type: string, format: uuid}, name: {type: string}, identifier: {type: string}}}
+    Problem: {type: object, required: [type, title, status], properties: {type: {type: string, format: uri-reference}, title: {type: string}, status: {type: integer}, detail: {type: string}, instance: {type: string}}}
+  responses:
+    Problem: {description: RFC 9457 problem details, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}

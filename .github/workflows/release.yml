@@ -1,0 +1,14 @@
+name: Release
+on: {push: {tags: ['v*']}}
+permissions: {contents: write, packages: write, id-token: write}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version-file: go.mod}
+      - run: go test ./... && go build ./...
+      - uses: softprops/action-gh-release@v2
+        with: {generate_release_notes: true}

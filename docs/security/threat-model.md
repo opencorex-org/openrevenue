@@ -1,0 +1,3 @@
+# Threat model
+
+Protect taxpayer confidentiality, financial integrity, availability, audit evidence, and rule provenance from account takeover, privilege escalation, tenant leakage, injection, malicious uploads, event replay, ledger mutation, supply-chain compromise, and insider abuse. Trust boundaries exist at browsers, identity providers, external integrations, uploads, queues, databases, and operator access. Controls include OIDC, deny-by-default RBAC/ABAC, tenant scoping, validation, idempotency, immutable records, encryption, scanning, least privilege, monitoring, and recovery exercises. Reassess for every material architecture change.

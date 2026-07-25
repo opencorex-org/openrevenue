@@ -1,0 +1,3 @@
+# Country-pack architecture
+
+Country packs are signed, versioned configuration bundles containing metadata, currencies, languages, identifiers, years, tax types, forms, validation/calculation rules, penalties, workflows, templates, translations, and integration declarations. Loading validates schemas and references, compiles rules in a sandbox, and activates a version only after approval. Submissions record exact form and rule versions forever. Packs cannot execute arbitrary host code. Included Sri Lanka material is fictional example data. See [loading flow](../diagrams/country-pack-loading.md).

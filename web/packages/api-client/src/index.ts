@@ -1,0 +1,2 @@
+export type Taxpayer = { id: string; name: string; identifier: string };
+export class ApiClient { constructor(private readonly baseUrl = "/api/v1", private readonly token?: string) {} async request<T>(path: string, init?: RequestInit): Promise<T> { const response = await fetch(`${this.baseUrl}${path}`, { ...init, headers: { "Content-Type": "application/json", ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}), ...init?.headers } }); if (!response.ok) throw await response.json(); return response.json() as Promise<T>; } }
