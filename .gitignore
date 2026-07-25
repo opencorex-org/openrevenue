@@ -1,0 +1,187 @@
+# -----------------------------------------------------------------------------
+# Operating systems and editors
+# -----------------------------------------------------------------------------
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# -----------------------------------------------------------------------------
+# Local configuration and secrets
+# Keep sanitized templates such as .env.example under version control.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
+!.env.*.sample
+!.env.*.template
+
+*.local
+*.secret
+*.secrets
+secrets/
+credentials/
+
+# Private keys and signing material (public certificates and CA bundles remain
+# trackable; secret scanning must still be enabled in CI).
+*.key
+*.private.pem
+*_private.pem
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# -----------------------------------------------------------------------------
+# Logs, runtime state, temporary files, and generated archives
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.pid
+*.pid.lock
+*.seed
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/
+.tmp/
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# -----------------------------------------------------------------------------
+# JavaScript / TypeScript / pnpm / Vite
+# Lockfiles are intentionally not ignored.
+# -----------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+dist/
+build/
+out/
+.output/
+.next/
+.nuxt/
+.svelte-kit/
+.vite/
+.turbo/
+.parcel-cache/
+
+*.tsbuildinfo
+vite.config.*.timestamp-*
+
+# Test and quality-tool output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+cypress/screenshots/
+cypress/videos/
+.eslintcache
+.stylelintcache
+
+# -----------------------------------------------------------------------------
+# Go
+# Source, go.mod, go.sum, and vendored dependencies remain trackable.
+# -----------------------------------------------------------------------------
+bin/
+*.test
+*.out
+coverage.out
+coverage.html
+profile.cov
+cpu.prof
+mem.prof
+
+# -----------------------------------------------------------------------------
+# Terraform
+# Keep .terraform.lock.hcl under version control for reproducible providers.
+# -----------------------------------------------------------------------------
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+.terraformrc
+terraform.rc
+
+# -----------------------------------------------------------------------------
+# Kubernetes, Helm, local containers, and development tooling
+# -----------------------------------------------------------------------------
+charts/*.tgz
+.kube/
+.helm/
+.minikube/
+.docker/
+
+# -----------------------------------------------------------------------------
+# Databases and local infrastructure data
+# Migrations, fixtures, reference data, and anonymized demo data remain tracked.
+# -----------------------------------------------------------------------------
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+
+/data/
+/volumes/
+
+# -----------------------------------------------------------------------------
+# Generated documentation and API/code-generation output
+# -----------------------------------------------------------------------------
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+.docusaurus/
+generated/
+
+# -----------------------------------------------------------------------------
+# Miscellaneous build and security-tool output
+# -----------------------------------------------------------------------------
+.scannerwork/
+.trivy/
+.grype/
+*.sarif
+artifacts/
+reports/
+
+# macOS/Linux debug artifacts
+core
+core.*
