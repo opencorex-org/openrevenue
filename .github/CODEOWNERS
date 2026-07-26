@@ -5,4 +5,5 @@
 /.github/workflows/ @opencorex-org/platform-maintainers @opencorex-org/security-maintainers
 /scripts/ci/ @opencorex-org/platform-maintainers @opencorex-org/security-maintainers
 /docs/security/ @opencorex-org/security-maintainers
+/security/exceptions/ @opencorex-org/security-maintainers
 /docs/operations/release-management.md @opencorex-org/platform-maintainers @opencorex-org/security-maintainers

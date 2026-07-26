@@ -39,3 +39,26 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           severity: CRITICAL,HIGH
+      - name: Generate image SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: openrevenue/api:${{ github.sha }}
+          format: spdx-json
+          output-file: openrevenue-image.spdx.json
+          upload-artifact: false
+      - name: Scan generated image SBOM
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: sbom
+          scan-ref: openrevenue-image.spdx.json
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+      - name: Retain image SBOM for investigation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: image-sbom
+          path: openrevenue-image.spdx.json
+          if-no-files-found: error
+          retention-days: 14

@@ -10,3 +10,4 @@
 - [ ] No real taxpayer data, secrets, or authoritative unverified tax values
 - [ ] Module ownership and append-only rules preserved
 - [ ] Documentation/ADR updated where needed
+- [ ] Security exceptions include an owner, expiry, compensating controls, and recorded risk acceptance

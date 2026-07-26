@@ -37,8 +37,16 @@ func TestOperationalAndAuthenticationBoundaries(t *testing.T) {
 	if health.Code != http.StatusOK {
 		t.Fatalf("health status = %d", health.Code)
 	}
-	if health.Header().Get("X-Content-Type-Options") != "nosniff" {
-		t.Fatal("secure headers missing")
+	for header, expected := range map[string]string{
+		"X-Content-Type-Options":    "nosniff",
+		"X-Frame-Options":           "DENY",
+		"Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+		"Permissions-Policy":        "camera=(), geolocation=(), microphone=(), payment=(), usb=()",
+		"Cache-Control":             "no-store",
+	} {
+		if health.Header().Get(header) != expected {
+			t.Fatalf("secure header %s = %q", header, health.Header().Get(header))
+		}
 	}
 
 	protected := httptest.NewRecorder()

@@ -1,0 +1,9 @@
+id: SEC-EXAMPLE-001
+owner: team-or-person
+expires: 2099-12-31
+risk: Explain the bounded security risk and affected assets.
+controls:
+  - Name the security gate or control.
+compensating_controls:
+  - Describe a measurable temporary mitigation.
+approval: Link to the recorded security risk-acceptance decision.

@@ -6,6 +6,7 @@ cd "$repo_root"
 
 required_files=(
   .env.example
+  .env.production.example
   .node-version
   .nvmrc
   .tool-versions
