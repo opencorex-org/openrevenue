@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,6 +11,12 @@ import (
 
 	app "github.com/opencorex-org/openrevenue/internal/administration/application"
 )
+
+type unhealthyDependencies struct{}
+
+func (unhealthyDependencies) Check(context.Context) Readiness {
+	return Readiness{Database: true, Migrations: false, Broker: false}
+}
 
 func authorizedRequest(t *testing.T, method, path, body string) *http.Request {
 	t.Helper()
@@ -64,6 +71,22 @@ func TestOperationalAndAuthenticationBoundaries(t *testing.T) {
 	router.ServeHTTP(metrics, httptest.NewRequest(http.MethodGet, "/metrics", nil))
 	if !strings.Contains(metrics.Body.String(), "openrevenue_domain_context_rejections_total 1") {
 		t.Fatalf("domain-context metric missing: %s", metrics.Body)
+	}
+}
+
+func TestReadinessDistinguishesDependencyAndMigrationFailure(t *testing.T) {
+	router := RouterWithReadiness(app.New(nil), unhealthyDependencies{})
+	health := httptest.NewRecorder()
+	router.ServeHTTP(health, httptest.NewRequest(http.MethodGet, "/health", nil))
+	if health.Code != http.StatusOK {
+		t.Fatalf("liveness must remain healthy, got %d", health.Code)
+	}
+	ready := httptest.NewRecorder()
+	router.ServeHTTP(ready, httptest.NewRequest(http.MethodGet, "/ready", nil))
+	if ready.Code != http.StatusServiceUnavailable ||
+		!strings.Contains(ready.Body.String(), `"migrations":false`) ||
+		!strings.Contains(ready.Body.String(), `"broker":false`) {
+		t.Fatalf("unexpected readiness response: %d %s", ready.Code, ready.Body)
 	}
 }
 

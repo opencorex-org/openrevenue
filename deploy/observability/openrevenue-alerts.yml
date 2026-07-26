@@ -1,0 +1,24 @@
+groups:
+  - name: openrevenue-platform
+    rules:
+      - alert: OpenRevenueOutboxPublicationFailed
+        expr: openrevenue_outbox_failed > 0
+        for: 5m
+        labels: { severity: critical, owner: platform }
+        annotations:
+          summary: Outbox records are failing publication
+          runbook_url: docs/operations/runbooks.md#outbox-publication
+      - alert: OpenRevenueOutboxBacklogGrowing
+        expr: openrevenue_outbox_pending > 100 or openrevenue_outbox_oldest_age_seconds > 300
+        for: 10m
+        labels: { severity: warning, owner: platform }
+        annotations:
+          summary: Outbox backlog exceeds the operating threshold
+          runbook_url: docs/operations/runbooks.md#outbox-publication
+      - alert: OpenRevenueCriticalAPIFailures
+        expr: sum(rate(openrevenue_registration_vertical_slice_failures_total[5m])) + sum(rate(openrevenue_return_lifecycle_failures_total[5m])) + sum(rate(openrevenue_financial_slice_failures_total[5m])) > 0.1
+        for: 10m
+        labels: { severity: critical, owner: api }
+        annotations:
+          summary: Critical API failure rate is elevated
+          runbook_url: docs/operations/runbooks.md#critical-api-failures

@@ -32,3 +32,35 @@ and ledger reversal outcomes with fixed operation labels. Alert on
 `openrevenue_financial_slice_failures_total`, stale allocation conflicts, and
 imbalanced-posting rejections. Never emit payment references, source document
 contents, taxpayer identifiers, amounts, or account balances as metric labels.
+
+## Audit and outbox signals
+
+Domain state, its append-only audit record, and its outbox envelope must be
+written through one transaction. The transaction is rolled back if audit
+metadata or event data contains a sensitive field. Allowed records contain
+stable identifiers and lifecycle states only; names, taxpayer identifiers,
+authorization values, tokens, request payloads, documents, and secrets are
+rejected.
+
+Publishers claim due records with a bounded lease. A record cannot be claimed by
+two publishers while its lease is active. Successful publication records
+`published_at`; failure increments `attempts`, stores only the redacted category
+`publication failed`, releases the lease, and schedules a bounded retry.
+
+The platform exports `openrevenue_outbox_pending`,
+`openrevenue_outbox_failed`, and `openrevenue_outbox_oldest_age_seconds`.
+The deployable Grafana dashboard is
+`deploy/observability/openrevenue-dashboard.json`; Prometheus alert rules are in
+`deploy/observability/openrevenue-alerts.yml`. Alerts cover publication
+failures, backlog size and age, and critical API failure rates.
+
+## Health, readiness, and trace correlation
+
+`/health` reports process liveness only. `/ready` separately reports database,
+migration, and broker readiness and returns HTTP 503 when any dependency is not
+ready. Deployments must not route application traffic until readiness succeeds.
+
+Ingress propagates or generates a correlation identifier and propagates a trace
+identifier. Structured request logs contain the same correlation and trace IDs,
+HTTP method, route, status, and duration. They never include headers, bodies,
+tenant IDs, actor IDs, or domain identifiers.

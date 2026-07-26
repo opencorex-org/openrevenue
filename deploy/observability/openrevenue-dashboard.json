@@ -1,0 +1,43 @@
+{
+  "title": "OpenRevenue platform foundations",
+  "uid": "openrevenue-platform",
+  "schemaVersion": 39,
+  "tags": ["openrevenue", "platform"],
+  "timezone": "utc",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Pending outbox records",
+      "type": "timeseries",
+      "targets": [{ "expr": "openrevenue_outbox_pending", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "title": "Oldest outbox record (seconds)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "openrevenue_outbox_oldest_age_seconds",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Failed publications",
+      "type": "stat",
+      "targets": [{ "expr": "openrevenue_outbox_failed", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "title": "Critical API failures",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(openrevenue_registration_vertical_slice_failures_total[5m])) + sum(rate(openrevenue_return_lifecycle_failures_total[5m])) + sum(rate(openrevenue_financial_slice_failures_total[5m]))",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

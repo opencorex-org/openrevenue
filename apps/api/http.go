@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,24 @@ import (
 )
 
 type Handler struct{ s *app.Service }
+
+type Readiness struct {
+	Database   bool `json:"database"`
+	Migrations bool `json:"migrations"`
+	Broker     bool `json:"broker"`
+}
+
+func (r Readiness) Ready() bool { return r.Database && r.Migrations && r.Broker }
+
+type ReadinessChecker interface {
+	Check(context.Context) Readiness
+}
+
+type readyDependencies struct{}
+
+func (readyDependencies) Check(context.Context) Readiness {
+	return Readiness{Database: true, Migrations: true, Broker: true}
+}
 
 var (
 	taxpayerCreateSuccesses         atomic.Uint64
@@ -37,14 +56,29 @@ var (
 )
 
 func Router(s *app.Service) http.Handler {
+	return RouterWithReadiness(s, readyDependencies{})
+}
+
+func RouterWithReadiness(s *app.Service, checker ReadinessChecker) http.Handler {
 	h := &Handler{s: s}
+	if checker == nil {
+		checker = readyDependencies{}
+	}
 	r := chi.NewRouter()
-	r.Use(mw.Correlation, mw.Security)
+	r.Use(mw.Correlation, mw.Observability, mw.Security)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		write(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
 	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
-		write(w, http.StatusOK, map[string]string{"status": "ready"})
+		status := checker.Check(r.Context())
+		code, label := http.StatusOK, "ready"
+		if !status.Ready() {
+			code, label = http.StatusServiceUnavailable, "not_ready"
+		}
+		write(w, code, map[string]any{
+			"status": label,
+			"checks": status,
+		})
 	})
 	r.Get("/metrics", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4")

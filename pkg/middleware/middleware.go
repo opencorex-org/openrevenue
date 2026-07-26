@@ -3,10 +3,14 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync/atomic"
+	"time"
 
+	"github.com/go-chi/chi/v5"
 	foundation "github.com/opencorex-org/openrevenue/pkg/domain"
 	"github.com/opencorex-org/openrevenue/pkg/id"
 )
@@ -16,9 +20,11 @@ type correlationTag struct{}
 type key string
 
 const CorrelationKey key = "correlation-id"
+const traceKey key = "trace-id"
 const domainContextKey key = "domain-context"
 
 var rejectedDomainContexts atomic.Uint64
+var identifierSegment = regexp.MustCompile(`(?i)/[0-9a-f]{8}-[0-9a-f-]{27,}(/|$)`)
 
 func Security(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,11 +38,50 @@ func Security(next http.Handler) http.Handler {
 func Correlation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := r.Header.Get("X-Correlation-ID")
-		if v == "" {
+		if parsed, err := foundation.NewCorrelationID(v); v == "" || err != nil {
 			v = id.New[correlationTag]().String()
+		} else {
+			v = parsed.String()
 		}
 		w.Header().Set("X-Correlation-ID", v)
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), CorrelationKey, v)))
+		traceID := r.Header.Get("X-Trace-ID")
+		if _, err := foundation.NewCorrelationID(traceID); traceID == "" || err != nil {
+			traceID = v
+		}
+		w.Header().Set("X-Trace-ID", traceID)
+		ctx := context.WithValue(r.Context(), CorrelationKey, v)
+		ctx = context.WithValue(ctx, traceKey, traceID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *statusWriter) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func Observability(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		started := time.Now()
+		writer := &statusWriter{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(writer, r)
+		route := chi.RouteContext(r.Context()).RoutePattern()
+		if route == "" {
+			route = identifierSegment.ReplaceAllString(r.URL.Path, "/{id}$1")
+		}
+		slog.InfoContext(r.Context(), "http request",
+			"method", r.Method,
+			"route", route,
+			"status", writer.status,
+			"duration_ms", time.Since(started).Milliseconds(),
+			"correlation_id", CorrelationID(r.Context()),
+			"trace_id", TraceID(r.Context()),
+		)
 	})
 }
 func Authenticate(next http.Handler) http.Handler {
@@ -47,6 +92,7 @@ func Authenticate(next http.Handler) http.Handler {
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"type":  "https://openrevenue.org/problems/unauthorized",
 				"title": "Authentication required", "status": http.StatusUnauthorized,
+				"correlationId": CorrelationID(r.Context()),
 			})
 			return
 		}
@@ -54,6 +100,7 @@ func Authenticate(next http.Handler) http.Handler {
 	})
 }
 func CorrelationID(ctx context.Context) string { v, _ := ctx.Value(CorrelationKey).(string); return v }
+func TraceID(ctx context.Context) string       { v, _ := ctx.Value(traceKey).(string); return v }
 
 func RequireDomainContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -113,10 +160,11 @@ func writeContextProblem(w http.ResponseWriter, detail string) {
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(http.StatusBadRequest)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"type":   "https://openrevenue.org/problems/domain-context",
-		"title":  "Invalid domain context",
-		"status": http.StatusBadRequest,
-		"detail": detail,
+		"type":          "https://openrevenue.org/problems/domain-context",
+		"title":         "Invalid domain context",
+		"status":        http.StatusBadRequest,
+		"detail":        detail,
+		"correlationId": w.Header().Get("X-Correlation-ID"),
 	})
 }
 
